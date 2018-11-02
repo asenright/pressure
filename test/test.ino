@@ -15,8 +15,15 @@
 #define SD_CS      53 //SD Chip Select
 #define SD_CD       49  //Card Detect (needs 10k pullup resistor!!)
 
+////Sensors///////////////////////////////////
+#define Sensor1 A0
+#define Sensor2 A3
+#define Sensor3 A2
+#define Sensor4 A1
+#define Sensor5 A5
+#define Sensor6 A4
 /////Speaker/////////////////////////////////
-#define SPEAKER 79
+//#define SPEAKER 79
 /////Variables/////////////////////////////////
 #define MILLIS_PER_SEC 1000
 
@@ -48,7 +55,7 @@ void setup()   {
   minutes = 0; 
   seconds = 0;
   milliseconds = 0;
-  noTone(SPEAKER);
+  //noTone(SPEAKER);
   display.clearDisplay();
   display.setCursor(0,0);
   
@@ -98,8 +105,10 @@ void loop()
     secondsSinceGetup = 0;
   } 
   if (secondsSinceGetup >= maxSitTimeInSeconds) {
-    tone(SPEAKER, 700, .1); 
-  } else noTone(SPEAKER);
+   // tone(SPEAKER, 700, .1); 
+  } else {
+    //noTone(SPEAKER);
+  }
   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV0:%04f\nV1:%04f\n",
                 minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
                 voltage0, voltage1);
@@ -114,3 +123,4 @@ void loop()
   lastTicks = millis();
   delay(100);
 }
+
