@@ -80,8 +80,8 @@ void setup()   {
 void loop()
 {
   char runtime[50] ;
-  int adcVal0 = analogRead(A0), adcVal1 = analogRead(A1);
-  float voltage0 = adcVal0 * (5.0 / 1023.0), voltage1 = adcVal1 * (5.0/1023.0);
+  int adcVal1 = analogRead(Sensor1), adcVal2 = analogRead(Sensor2);
+  float voltage0 = adcVal1 * (5.0 / 1023.0), voltage1 = adcVal2 * (5.0/1023.0);
   
 
   milliseconds += (millis() - lastTicks);
