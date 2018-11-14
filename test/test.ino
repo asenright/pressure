@@ -15,16 +15,17 @@
 #define SD_CS      53 //SD Chip Select
 #define SD_CD       49  //Card Detect (needs 10k pullup resistor!!)
 
-////Sensors///////////////////////////////////
-//#define SensorEnable 26
+////I/O///////////////////////////////////
+#define Button0 36
+#define Button1 38
+#define SensorEnable 26
 #define Sensor1 A0
 #define Sensor2 A3
 #define Sensor3 A2
 #define Sensor4 A1
 #define Sensor5 A5
 #define Sensor6 A4
-/////Speaker/////////////////////////////////
-//#define SPEAKER 79
+#define WarningLED 13
 /////Variables/////////////////////////////////
 #define MILLIS_PER_SEC 1000
 
@@ -60,6 +61,10 @@ void setup()   {
   //noTone(SPEAKER);
   display.clearDisplay();
   display.setCursor(0,0);
+  pinMode(Button0, INPUT);
+  pinMode(Button1, INPUT);
+  pinMode(WarningLED, OUTPUT);
+  
   //pinMode(SensorEnable, OUTPUT);
   //digitalWrite(SensorEnable, HIGH);
   if (!card.init(SPI_HALF_SPEED, SD_CS)) {
@@ -75,60 +80,68 @@ void setup()   {
 }
 
 void loop()
-{
-  char runtime[64];
-  int adcVal1 = analogRead(Sensor1), adcVal2 = analogRead(Sensor2);
-  
-  float voltage1 = adcVal1 * (5.0 / 1023.0), voltage2 = adcVal2 * (5.0/1023.0);
+{ 
+  int   button0Val = digitalRead(Button0), button1Val = digitalRead(Button1),
+        adcVal1 = analogRead(Sensor1), adcVal2 = analogRead(Sensor2),
+        adcVal3 = analogRead(Sensor3), adcVal4 = analogRead(Sensor4),
+        adcVal5 = analogRead(Sensor5), adcVal6 = analogRead(Sensor6);
+  float voltage1 = adcVal1 * (5.0 / 1023.0), voltage2 = adcVal2 * (5.0/1023.0),
+        voltage3 = adcVal3 * (5.0 / 1023.0), voltage4 = adcVal4 * (5.0/1023.0),
+        voltage5 = adcVal5 * (5.0 / 1023.0), voltage6 = adcVal6 * (5.0/1023.0);
+  char runtime[64], serialStr[64];
 
-  //if (Serial1 || Serial2 || Serial3) {
-      int   adcVal3 = analogRead(Sensor3), adcVal4 = analogRead(Sensor4),
-            adcVal5 = analogRead(Sensor5), adcVal6 = analogRead(Sensor6);
-      float voltage3 = adcVal3 * (5.0 / 1023.0), voltage4 = adcVal4 * (5.0/1023.0),
-            voltage5 = adcVal5 * (5.0 / 1023.0), voltage6 = adcVal6 * (5.0/1023.0);
-       char serialStr[50];
-         
-//  }
-  
   milliseconds += (millis() - lastTicks);
-  if (milliseconds >= MILLIS_PER_SEC) { //1000 milliseconds per sec
-      milliseconds -= MILLIS_PER_SEC;
-      seconds++;
-      secondsSinceGetup++;
-
-      if (digitalRead(SD_CD) == LOW) {
-        sdState = "Not In";
-      } else {
-        sdState = "In";
-      }
+  
+  //Light LED if either button is high
+  if (button0Val == HIGH) {
+    digitalWrite(WarningLED, HIGH);
+     sprintf(runtime,"Button 0!\n");
+  } else if (button1Val == HIGH) {
+    digitalWrite(WarningLED, HIGH);
+     sprintf(runtime,"Button 1!\n");
   }
-  if (seconds >= 60) {
-     seconds -= 60;
-     minutes++;
-  }
-
-  if (voltage1 > 4.0 && voltage2 > 4.0) {
-    secondsSinceGetup = 0;
-  } 
-  if (secondsSinceGetup >= maxSitTimeInSeconds) {
-   // tone(SPEAKER, 700, .1); 
-  } else {
-    //noTone(SPEAKER);
-  }
-
-  switch (seconds % 3) {
-      case (0): sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV1:%02f\nV2:%02f\n",
-                minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
-                voltage1, voltage2);
-                break;
-      case (1):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV3:%02f\nV4:%02f\n",
-                minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
-                voltage3, voltage4);
-                break;
-      case (2):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV5:%02f\nV6:%02f\n",
-                minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
-                voltage5, voltage6);
-                break;
+  else { 
+      digitalWrite(WarningLED, LOW);
+        
+        if (milliseconds >= MILLIS_PER_SEC) { //1000 milliseconds per sec
+            milliseconds -= MILLIS_PER_SEC;
+            seconds++;
+            secondsSinceGetup++;
+      
+            if (digitalRead(SD_CD) == LOW) {
+              sdState = "Not In";
+            } else {
+              sdState = "In";
+            }
+        }
+        if (seconds >= 60) {
+           seconds -= 60;
+           minutes++;
+        }
+      
+        if (voltage1 > 4.0 && voltage2 > 4.0) {
+          secondsSinceGetup = 0;
+        } 
+        if (secondsSinceGetup >= maxSitTimeInSeconds) {
+         // tone(SPEAKER, 700, .1); 
+        } else {
+          //noTone(SPEAKER);
+        }
+      
+        switch (seconds % 3) {
+            case (0): sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV1:%02f\nV2:%02f\n",
+                      minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
+                      voltage1, voltage2);
+                      break;
+            case (1):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV3:%02f\nV4:%02f\n",
+                      minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
+                      voltage3, voltage4);
+                      break;
+            case (2):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV5:%02f\nV6:%02f\n",
+                      minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
+                      voltage5, voltage6);
+                      break;
+        }
   }
 
   
