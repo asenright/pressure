@@ -65,8 +65,8 @@ void setup()   {
   pinMode(Button1, INPUT);
   pinMode(WarningLED, OUTPUT);
   
-  //pinMode(SensorEnable, OUTPUT);
-  //digitalWrite(SensorEnable, HIGH);
+
+
   if (!card.init(SPI_HALF_SPEED, SD_CS)) {
       display.print("!!!!!!!!!\nSD card\nFailed to init!");
       display.display();
@@ -81,6 +81,10 @@ void setup()   {
 
 void loop()
 { 
+    pinMode(SensorEnable, OUTPUT);
+  digitalWrite(SensorEnable, HIGH);
+  
+  //digitalWrite(SensorEnable, HIGH);
   int   button0Val = digitalRead(Button0), button1Val = digitalRead(Button1),
         adcVal1 = analogRead(Sensor1), adcVal2 = analogRead(Sensor2),
         adcVal3 = analogRead(Sensor3), adcVal4 = analogRead(Sensor4),
@@ -89,6 +93,7 @@ void loop()
         voltage3 = adcVal3 * (5.0 / 1023.0), voltage4 = adcVal4 * (5.0/1023.0),
         voltage5 = adcVal5 * (5.0 / 1023.0), voltage6 = adcVal6 * (5.0/1023.0);
   char runtime[64], serialStr[64];
+ // digitalWrite(SensorEnable, LOW);
 
   milliseconds += (millis() - lastTicks);
   
@@ -127,21 +132,24 @@ void loop()
         } else {
           //noTone(SPEAKER);
         }
-      
-        switch (seconds % 3) {
-            case (0): sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV1:%02f\nV2:%02f\n",
+        sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV1:%02f\nV2:%02f\n",
                       minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
                       voltage1, voltage2);
-                      break;
-            case (1):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV3:%02f\nV4:%02f\n",
-                      minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
-                      voltage3, voltage4);
-                      break;
-            case (2):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV5:%02f\nV6:%02f\n",
-                      minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
-                      voltage5, voltage6);
-                      break;
-        }
+      
+       //n switch (seconds % 3) {
+       //     case (0): sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV1:%02f\nV2:%02f\n",
+      //                minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
+       //               voltage1, voltage2);
+       //               break;
+       //     case (1):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV3:%02f\nV4:%02f\n",
+       //               minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
+       //               voltage3, voltage4);
+      //                break;
+      //      case (2):   sprintf(runtime,"Rt:%02d:%02d;GuT:%02d:%02d\nV5:%02f\nV6:%02f\n",
+      //                minutes, seconds, (secondsSinceGetup / 60), secondsSinceGetup % 60, 
+      //                voltage5, voltage6);
+      //                break;
+     //   }
   }
 
   
