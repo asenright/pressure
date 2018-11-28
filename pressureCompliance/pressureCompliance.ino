@@ -12,12 +12,20 @@
 #define TIME_LIMIT 5    //how long between movements (should be around 30 minutes in real life
 #define TIME_HOLD  5      // how long to have no pressure on butt
 #define MIN_PRESSURE 0
+#define SENSOR_COUNT 6
+#define WARNING_LED 13
+
+int sensor_address[6];
 
 
 Adafruit_SSD1306 display(MOSI, CLK, OLED_DC, OLED_RESET, OLED_CS);
 int Sensor[6];
 int clk = TIME_LIMIT;
 int radii[6];
+int no_weight[6];
+int all_weight[6];
+int weight_difference[6];
+int weight_mod[6];
 
 void setup() {
   display.begin(SSD1306_SWITCHCAPVCC);
@@ -29,21 +37,60 @@ void setup() {
   display.setTextColor(WHITE);
   display.display();
   Serial.begin(9600);
+  sensor_address[0] = A5;
+  sensor_address[1] = A3;
+  sensor_address[2] = A4;
+  sensor_address[3] = A0;
+  sensor_address[4] = A1;
+  sensor_address[5] = A2;
+  calibrate();
+  pinMode(WARNING_LED, OUTPUT);
+
+}
+void calibrate() {
+  int i;
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.print("Remove weight from sensors for calibration...");
+  display.display();
+  delay(3000);
+
+  for (i=0; i<SENSOR_COUNT;i++) {
+    no_weight[i] = analogRead(sensor_address[i]);
+  }
+
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.print("Sit on sensor to complete calibration...");
+  display.display();
+  delay(3000);
+
+  for (i=0; i<SENSOR_COUNT; i++) {
+    all_weight[i] = analogRead(sensor_address[i]);
+  }
+
+
+  for (i=0; i<SENSOR_COUNT; i++) {
+    weight_difference[i] = all_weight[i]-no_weight[i];
+    weight_mod[i]=weight_difference[i]/5;
+  }
+  
 }
 
 void adjustSeat(){
-  Serial.println("adjustSeat Begin");
+  
   bool complete = false;
   int timer[6] = {0};
   boolean moved[6] = {false};
   int i;
+  digitalWrite(WARNING_LED, HIGH);
   while(!complete){
     
     readSensor();
     draw_all_circs(radii, moved);
     complete = true;
     for(i=0; i<6;i++){
-       if(Sensor[i] <= 0){
+       if(radii[i] <= 1){
           timer[i]++;
        }
        if(timer[i] >= TIME_HOLD)
@@ -53,7 +100,7 @@ void adjustSeat(){
      }
      delay(50);
    }
-   Serial.println("adjustSeat Done");
+   digitalWrite(WARNING_LED, LOW);
 }
 
 void draw_all_circs(int radii[], boolean moved[]) {
@@ -108,36 +155,25 @@ void draw_all_circs(int radii[], boolean moved[]) {
 }
 
 void readSensor(){
-  Sensor[0] = analogRead(A0);
-  Sensor[1] = analogRead(A1);
-  Sensor[2] = analogRead(A2);
-  Sensor[3] = analogRead(A3);
-  Sensor[4] = analogRead(A4);
-  Sensor[5] = analogRead(A5);
+  int i;
+  for (i=0; i<SENSOR_COUNT; i++) {
+    Sensor[i] = analogRead(sensor_address[i]);
+  }
 
-
-  radii[0] = convertReading(Sensor[0]);
-  radii[1] = convertReading(Sensor[1]);
-  radii[2] = convertReading(Sensor[2]);
-  radii[3] = convertReading(Sensor[3]);
-  radii[4] = convertReading(Sensor[4]);
-  radii[5] = convertReading(Sensor[5]);
+  for (i=0; i<SENSOR_COUNT; i++) {
+    radii[i] = convertReading(Sensor[i], i);
+  }
  
   
-  Serial.print(" Clock: ");   Serial.print(clk); 
-  Serial.print(" Sensor5: "); Serial.print(Sensor[5]);
-  Serial.print(" Sensor4: "); Serial.print(Sensor[4]); Serial.println();
-  
-  }
+}
 
-  int convertReading(int i){
-    int value;
-    value = i/100;
-    Serial.print(value);
-    if (value>5)
-      value = 5;
-    return value;    
-  }
+int convertReading(int convert_me, int sensor_number){
+  int value;
+  value = convert_me / weight_mod[sensor_number];
+  if (value>5)
+    value = 5;
+  return value;    
+}
 
 
 void loop() {
