@@ -169,9 +169,11 @@ void readSensor(){
 
 int convertReading(int convert_me, int sensor_number){
   int value;
-  value = convert_me / weight_mod[sensor_number];
-  if (value>5)
+  value = convert_me - no_weight[sensor_number];
+  value = value/weight_mod[sensor_number];
+  if (value>5) {
     value = 5;
+  }
   return value;    
 }
 
