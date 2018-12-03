@@ -73,6 +73,8 @@ void calibrate() {
   for (i=0; i<SENSOR_COUNT; i++) {
     weight_difference[i] = all_weight[i]-no_weight[i];
     weight_mod[i]=weight_difference[i]/5;
+    if (weight_mod[i] ==0)
+       weight_mod[i]=1;
   }
   
 }
