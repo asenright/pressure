@@ -114,7 +114,6 @@ void adjustSeat(){
        if(moved[i]==false)
           complete = false;
      }
-     delay(50);
    }
    digitalWrite(WARNING_LED, LOW);
    
